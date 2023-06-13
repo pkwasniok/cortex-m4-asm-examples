@@ -10,12 +10,47 @@ __reset_handler: .word _reset+1
 
 .section .text
 _reset:
-  mov r1, #6
-  bl fibonacci
+  @ Enable GPIO clock
+  ldr r0, =0x40023830
+  ldr r1, [r0]
+  ldr r2, =0b1<<0
+  orr r1, r2
+  str r1, [r0]
+
+  @ Set D13(PA5) to output
+  ldr r0, =0x40020000
+  ldr r1, [r0]
+  ldr r2, =0b01<<10
+  orr r1, r2
+  str r1, [r0]
 
   b main
 
 main:
+  @ Turn led on
+  ldr r0, =0x40020018
+  ldr r1, [r0]
+  ldr r2, =0b1<<5
+  orr r1, r2
+  str r1, [r0]
+
+  add r6, #1
+  mov r1, r6
+  bl fibonacci
+  mov r7, r0
+
+  @ Turn led off
+  ldr r0, =0x40020018
+  ldr r1, [r0]
+  ldr r2, =0b1<<21
+  orr r1, r2
+  str r1, [r0]
+
+  add r6, #1
+  mov r1, r6
+  bl fibonacci
+  mov r7, r0
+
   b main
 
 fibonacci:
